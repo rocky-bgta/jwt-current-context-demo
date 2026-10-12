@@ -1,0 +1,264 @@
+{
+  "info": {
+    "name": "JWT + Current Context \u2014 Packagewise Simple",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "jwt",
+      "value": ""
+    },
+    {
+      "key": "contextA",
+      "value": ""
+    },
+    {
+      "key": "contextC",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"demo\", \"password\": \"demo123\"}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Success', function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) pm.collectionVariables.set('jwt', pm.response.json().accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Create A context",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/A/contexts"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Success', function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) pm.collectionVariables.set('contextA', pm.response.json().contextId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Access A",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          },
+          {
+            "key": "X-Current-Context",
+            "value": "{{contextA}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/A"
+      }
+    },
+    {
+      "name": "04 Create C context",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/C/contexts"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Success', function () { pm.response.to.have.status(200); });",
+              "if (pm.response.code === 200) pm.collectionVariables.set('contextC', pm.response.json().contextId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Access C",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          },
+          {
+            "key": "X-Current-Context",
+            "value": "{{contextC}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/C"
+      }
+    },
+    {
+      "name": "06 Access B (JWT only)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/B"
+      }
+    },
+    {
+      "name": "07 Revoke A context",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/A/contexts/{{contextA}}"
+      }
+    },
+    {
+      "name": "08 A after revoke (expect 403)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          },
+          {
+            "key": "X-Current-Context",
+            "value": "{{contextA}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/A"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Room A is blocked after context revoke', function () {",
+              "    pm.response.to.have.status(403);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 C still works",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          },
+          {
+            "key": "X-Current-Context",
+            "value": "{{contextC}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/C"
+      }
+    },
+    {
+      "name": "10 B still works",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/B"
+      }
+    },
+    {
+      "name": "11 Logout JWT",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/logout"
+      }
+    },
+    {
+      "name": "12 B after logout (expect 401)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/rooms/B"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('JWT is rejected after logout', function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
