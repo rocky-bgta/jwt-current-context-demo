@@ -8,5 +8,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 app:
-  jwt-secret: ${JWT_SECRET:change-this-development-secret-at-least-32-bytes-long}
+  jwt-secret: ${JWT_SECRET}
+  demo-username: ${DEMO_USERNAME:demo}
+  demo-password: ${DEMO_PASSWORD}
   token-hours: 2
