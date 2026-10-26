@@ -47,7 +47,7 @@ Each room has its own controller, so you can set breakpoints independently.
 4. Import `postman/JWT-CurrentContext-Demo-Packagewise.postman_collection.json`.
 5. Run requests in numerical order.
 
-Demo login: `demo` / `demo123`.
+Set environment variables before starting: `JWT_SECRET` (at least 32 bytes) and `DEMO_PASSWORD` (your chosen demo password). Optional: `DEMO_USERNAME` (defaults to `demo`). Use your configured values to log in. Never commit real credentials.
 
 ## Postman flow
 
@@ -77,10 +77,17 @@ in collection variables, but you can copy and paste them manually.
 
 ## Important notes
 
-This is a learning demo, not production authentication. Credentials are
-hardcoded for clarity, and the default JWT signing secret is for local use.
+This is a learning demo, not production authentication. Credentials and JWT signing secret are configured through environment variables, not committed defaults.
 Room A and C contexts are scoped to a room, user and JWT session.
 JWT logout invalidates access even if a room context still exists.
 
 **Build status:** Maven is not available in the creation environment, so
 a successful compile/run and live Redis/MongoDB integration were not verified.
+
+## Automated tests and CI
+
+Run `mvn test` with Java 17. GitHub Actions runs unit tests on pull requests and pushes to main. Current tests cover JWT creation, signature mismatch and expiry, plus room-context isolation, revocation and Redis expiry. MongoDB/Redis integration and end-to-end behavior are not covered by these unit tests.
+
+## Architecture
+
+See [architecture and request flow](docs/ARCHITECTURE.md), including a Mermaid diagram.
